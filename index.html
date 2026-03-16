@@ -31,7 +31,7 @@
                     <h2 class="text-sm uppercase tracking-widest opacity-80 font-bold">Venta Global Compañía</h2>
                     <div class="flex items-baseline space-x-2 mt-2">
                         <span id="total-vendido-global" class="text-6xl font-black">0</span>
-                        <span class="text-xl opacity-60">/ 700 Cajas</span>
+                        <span class="text-xl opacity-60">/ 600 Cajas</span>
                     </div>
                     <div class="w-full bg-blue-800 rounded-full h-4 mt-4 overflow-hidden border border-blue-700">
                         <div id="barra-global" class="h-full bg-green-400 transition-all duration-500" style="width: 0%"></div>
@@ -168,7 +168,7 @@
 
             const bonoSup = t >= 595 ? (t * 1000) : 0;
             msg += `--------------------------------\n`;
-            msg += `📦 *TOTAL CAJAS:* ${t} / 700\n`;
+            msg += `📦 *TOTAL CAJAS:* ${t} / 600\n`;
             msg += `💰 *INC. VENDEDORES:* $${plataVend.toLocaleString('es-CO')}\n`;
             msg += `👤 *INC. SUPERVISOR:* $${bonoSup.toLocaleString('es-CO')}\n`;
             msg += `🚀 *TOTAL A PAGAR:* $${(plataVend + bonoSup).toLocaleString('es-CO')}\n\n`;
