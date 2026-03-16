@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incentivos PROVECOL - LACTALIS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 min-h-screen font-sans pb-24">
+
+    <header class="bg-white shadow-sm border-b p-4 mb-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl font-black text-blue-900 tracking-tighter">PROVECOL</span>
+                <span class="text-gray-300 text-xl">|</span>
+                <span class="text-xl font-bold text-blue-600 italic">LACTALIS</span>
+            </div>
+            <div class="text-right">
+                <p id="fecha-actual" class="text-xs text-gray-500 font-medium"></p>
+                <p class="text-sm font-bold text-blue-800">Sede Caucasia</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="lg:col-span-2 bg-blue-900 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
+                <div class="relative z-10">
+                    <h2 class="text-sm uppercase tracking-widest opacity-80 font-bold">Venta Global Compañía</h2>
+                    <div class="flex items-baseline space-x-2 mt-2">
+                        <span id="total-vendido-global" class="text-6xl font-black">0</span>
+                        <span class="text-xl opacity-60">/ 700 Cajas</span>
+                    </div>
+                    <div class="w-full bg-blue-800 rounded-full h-4 mt-4 overflow-hidden border border-blue-700">
+                        <div id="barra-global" class="h-full bg-green-400 transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 border-2 border-green-100 shadow-lg">
+                <h3 class="text-gray-500 text-xs font-bold uppercase mb-4 text-center border-b pb-2">Resumen Económico (COP)</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-medium">Total Vendedores:</span>
+                        <span id="total-dinero-vend" class="font-bold text-blue-700">$0</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-medium">Incentivo Supervisor:</span>
+                        <span id="bono-sup-valor" class="font-bold text-green-600">$0</span>
+                    </div>
+                    <div class="pt-2 border-t flex justify-between items-center">
+                        <span class="text-base font-black">TOTAL PLAN:</span>
+                        <span id="total-plan-dinero" class="text-xl font-black text-slate-800">$0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="contenedor-vendedores" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+
+        <div class="fixed bottom-20 right-6 flex flex-col space-y-3">
+            <button onclick="exportarExcel()" title="Exportar a Excel" class="bg-white border-2 border-green-600 text-green-600 w-14 h-14 rounded-full shadow-xl hover:bg-green-50 flex items-center justify-center transition-transform hover:scale-110">
+                <i class="fas fa-file-excel text-xl"></i>
+            </button>
+            <button onclick="enviarWhatsApp()" title="Enviar a WhatsApp" class="bg-green-500 text-white w-14 h-14 rounded-full shadow-xl hover:bg-green-600 flex items-center justify-center transition-transform hover:scale-110">
+                <i class="fab fa-whatsapp text-2xl"></i>
+            </button>
+        </div>
+    </main>
+
+    <footer class="fixed bottom-0 w-full bg-white border-t p-3 text-center">
+        <p class="text-gray-500 text-xs font-semibold uppercase tracking-wider">
+            App desarrollada por <span class="text-blue-600">Vibras Positivas</span> © Derechos de Autor | <i class="fab fa-whatsapp"></i> 3117700431
+        </p>
+    </footer>
+
+    <script>
+        const META_GLOBAL = 600;
+        const UMBRAL_PORCENTAJE = 0.85; 
+        const VALOR_CAJA_VEND = 3000;
+        const VALOR_CAJA_SUP = 1000;
+
+        const vendedores = [
+            { n: "FABIAN", c: 300 }, { n: "CLAUDIA", c: 101 },
+            { n: "POLO", c: 58 }, { n: "LARRY", c: 48 },
+            { n: "OSCAR", c: 44 }, { n: "LUCELLLYS", c: 26 },
+            { n: "LEYDIS", c: 23 }
+        ];
+
+        let ventas = JSON.parse(localStorage.getItem('v_lactalis_dist')) || {};
+
+        function render() {
+            const container = document.getElementById('contenedor-vendedores');
+            container.innerHTML = '';
+            let totalG = 0;
+            let totalPlataVendedores = 0;
+
+            vendedores.forEach(v => {
+                const actual = ventas[v.n] || 0;
+                totalG += actual;
+                const pct = ((actual / v.c) * 100).toFixed(1);
+                const cumple = actual >= (v.c * UMBRAL_PORCENTAJE);
+                const dineroV = cumple ? (actual * VALOR_CAJA_VEND) : 0;
+                totalPlataVendedores += dineroV;
+
+                container.innerHTML += `
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="font-bold text-gray-700 text-sm uppercase">${v.n}</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${cumple ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}">
+                                ${cumple ? 'ALCANZADO' : 'EN PROCESO'}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <input type="number" value="${actual}" onchange="save('${v.n}', this.value)" 
+                                class="w-16 text-lg font-bold text-blue-600 bg-blue-50 rounded-lg p-1 text-center outline-none">
+                            <div class="text-right leading-none">
+                                <p class="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">Presupuesto: ${v.c}</p>
+                                <p class="text-xs font-black text-blue-900">${pct}%</p>
+                                <p class="text-[10px] font-bold text-green-600">$${dineroV.toLocaleString('es-CO')}</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-100 h-1 rounded-full overflow-hidden">
+                            <div class="bg-blue-500 h-1 transition-all duration-500" style="width: ${Math.min(pct, 100)}%"></div>
+                        </div>
+                    </div>`;
+            });
+
+            const bonoSup = totalG >= (META_GLOBAL * UMBRAL_PORCENTAJE) ? (totalG * VALOR_CAJA_SUP) : 0;
+
+            document.getElementById('total-vendido-global').innerText = totalG;
+            document.getElementById('barra-global').style.width = `${Math.min((totalG/META_GLOBAL)*100, 100)}%`;
+            document.getElementById('total-dinero-vend').innerText = `$${totalPlataVendedores.toLocaleString('es-CO')}`;
+            document.getElementById('bono-sup-valor').innerText = `$${bonoSup.toLocaleString('es-CO')}`;
+            document.getElementById('total-plan-dinero').innerText = `$${(totalPlataVendedores + bonoSup).toLocaleString('es-CO')}`;
+        }
+
+        function save(n, v) {
+            ventas[n] = parseInt(v) || 0;
+            localStorage.setItem('v_lactalis_dist', JSON.stringify(ventas));
+            render();
+        }
+
+        function updateTime() {
+            const options = { timeZone: 'America/Bogota', dateStyle: 'medium', timeStyle: 'medium' };
+            document.getElementById('fecha-actual').innerText = new Date().toLocaleString('es-CO', options);
+        }
+
+        function enviarWhatsApp() {
+            let t = 0;
+            let plataVend = 0;
+            let msg = `*PROVECOL - LACTALIS (CAUCASIA)*\n`;
+            msg += `🕒 ${new Date().toLocaleString('es-CO')}\n`;
+            msg += `--------------------------------\n`;
+            msg += `*VENDEDOR | PTA VS REAL | %*\n`;
+            
+            vendedores.forEach(v => {
+                const act = ventas[v.n] || 0;
+                t += act;
+                const pct = ((act/v.c)*100).toFixed(1);
+                const cumple = act >= (v.c * 0.85);
+                const ganancia = cumple ? (act * 3000) : 0;
+                plataVend += ganancia;
+                msg += `${cumple ? '✅':'⏳'} *${v.n}*: ${v.c} vs ${act} (${pct}%)\n`;
+            });
+
+            const bonoSup = t >= 595 ? (t * 1000) : 0;
+            msg += `--------------------------------\n`;
+            msg += `📦 *TOTAL CAJAS:* ${t} / 700\n`;
+            msg += `💰 *INC. VENDEDORES:* $${plataVend.toLocaleString('es-CO')}\n`;
+            msg += `👤 *INC. SUPERVISOR:* $${bonoSup.toLocaleString('es-CO')}\n`;
+            msg += `🚀 *TOTAL A PAGAR:* $${(plataVend + bonoSup).toLocaleString('es-CO')}\n\n`;
+            msg += `_App desarrollada por Vibras Positivas_`;
+
+            window.open(`https://wa.me/573164704426?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function exportarExcel() {
+            const data = vendedores.map(v => {
+                const act = ventas[v.n] || 0;
+                const cumple = act >= (v.c * 0.85);
+                return {
+                    VENDEDOR: v.n,
+                    PRESUPUESTO: v.c,
+                    EJECUTADO: act,
+                    DIFERENCIA: act - v.c,
+                    CUMPLIMIENTO: ((act/v.c)*100).toFixed(1) + '%',
+                    INCENTIVO_COP: cumple ? (act * 3000) : 0
+                }
+            });
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Incentivos");
+            XLSX.writeFile(wb, "Reporte_Lactalis_Caucasia.xlsx");
+        }
+
+        setInterval(updateTime, 1000);
+        updateTime();
+        render();
+    </script>
+</body>
+</html>
